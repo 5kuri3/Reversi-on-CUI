@@ -6,4 +6,5 @@ interface Player {
     }
     int move(Board board);      // Boardの可能な手からひとつ選ぶ
     String getName();           // プレイヤー名を返す
+    String getTitle();
 }
