@@ -3,13 +3,18 @@ import java.util.*;
 // モンテカルロ法を用い，Boardインターフェースを守っているゲーム盤なら何でも，ある程度
 // 「よい」手を選ぶ，何でも屋ゲームプレイヤー
 public class GeneralPlayer implements Player {
-    String name;
-    Random random;
+    private static final String TITLE = "General AI";
+    private final String name;
+    private final Random random;
+    
     public GeneralPlayer(String name) {
         this.name = name;
         random = new Random();
     }
+    
     public String getName() { return name; }
+    
+    @Override
     public int move(Board board) {
         List<Integer> moves = board.legalMoves();
         int n = moves.size();
@@ -40,6 +45,7 @@ public class GeneralPlayer implements Player {
         }
         return moves.get(max);
     }
+    
     private Player.ID tryOne(Board board) {
         if (board.isEndOfGame()) {
             return board.winner(); // 最終的な勝者を返す
@@ -49,5 +55,10 @@ public class GeneralPlayer implements Player {
         Player.ID value = tryOne(board);            // 再帰的に次の局面へ
         board.unput();                              // 元の状態を復元
         return value;                               // このシミュレーションの結果の勝者
+    }
+    
+    @Override
+    public String getTitle() {
+        return TITLE;
     }
 }
