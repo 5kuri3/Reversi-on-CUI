@@ -43,6 +43,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
     private final boolean inverse;
     private List<State> state;
     private Deque<StateHistory> history;
+    private int lastPutPos = M_VOID;
 
     public ReversiBoard() {
         this(false);
@@ -159,26 +160,32 @@ public class ReversiBoard extends AbstractBoard implements Board {
 
     @Override
     public void put(int m) {
-        int x = convertToX(m);
-        int y = convertToY(m);
-        if (isAvailable(x, y)) {
-            int[] diff = getDiff();
-            State myState = playerState(nextTurn());
-            history.push(createHistory());
-            for (int i = 0; i < 8; i++) {
-                if (isAvailable(nextTurn(), x, y, diff[i])) {
-                    for (int j = m + diff[i]; contains(j) && state.get(j) != myState; j += diff[i]) {
-                        state.set(j, myState);
+        put(m, false);
+    }
+
+    public void put(int m, boolean forceFlipPlayer) {
+        history.push(createHistory());
+        if(m != M_VOID) {
+            int x = convertToX(m);
+            int y = convertToY(m);
+            if (isAvailable(x, y)) {
+                int[] diff = getDiff();
+                State myState = playerState(nextTurn());
+                for (int i = 0; i < 8; i++) {
+                    if (isAvailable(nextTurn(), x, y, diff[i])) {
+                        for (int j = m + diff[i]; contains(j) && state.get(j) != myState; j += diff[i]) {
+                            state.set(j, myState);
+                        }
                     }
                 }
-            }
-            state.set(m, myState);
-            if (canPut(opposite())) {
-                flipTurn();
+                state.set(m, myState);
+                this.lastPutPos = m;
+            } else {
+                throw new IllegalArgumentException();
             }
         }
-        else {
-            throw new IllegalArgumentException();
+        if (forceFlipPlayer || canPut(opposite())) {
+            flipTurn();
         }
     }
 
@@ -197,9 +204,9 @@ public class ReversiBoard extends AbstractBoard implements Board {
     @Override
     public void print(PrintStream out) {
         List<Integer> legalMoves = legalMoves();
-        out.println("---------------------------------");
+        out.println("--a---b---c---d---e---f---g---h--");
         for (int i = 1; i <= height; i++) {
-            out.print("|");
+            out.print(Integer.valueOf(i).toString());
             for (int j = 1; j <= width; j++) {
                 final int m = convert(j, i);
                 if (legalMoves.contains(m)) {
@@ -215,7 +222,12 @@ public class ReversiBoard extends AbstractBoard implements Board {
                          * if (state.get(convert(j,i)) == State.BLACK){ out.print("\u001b[00;42m" + " "
                          * + "\u001b[00;42m" + "\u001b[00;30m" + state.get(convert(j, i)) + " " +
                          * "\u001b[00m"); } else
-                         */ out.print("\u001b[00;44m" + " " + state.get(convert(j, i)).piece(inverse) + " " + "\u001b[00m");
+                         */
+                        if (m == lastPutPos) {
+                            out.print("\u001b[00;45m" + " " + state.get(m).piece(inverse) + " " + "\u001b[00m");
+                        } else {
+                            out.print("\u001b[00;44m" + " " + state.get(m).piece(inverse) + " " + "\u001b[00m");
+                        }
                     }
                     // out.print(state.get(convert(j, i)));
                 }
@@ -256,11 +268,39 @@ public class ReversiBoard extends AbstractBoard implements Board {
         else return null;
     }
 
-    private boolean isAvailable(int x, int y) {
+    int getWidthMin() {
+        return 1;
+    }
+
+    int getWidthMax() {
+        return width;
+    }
+
+    int getHeightMin() {
+        return 1;
+    }
+
+    int getHeightMax() {
+        return height;
+    }
+
+    int getBoardSize() {
+        return width * height;
+    }
+
+    State get(int x, int y) {
+        return get(convert(x, y));
+    }
+
+    State get(int m) {
+        return state.get(m);
+    }
+
+    boolean isAvailable(int x, int y) {
         return isAvailable(nextTurn(), x, y);
     }
 
-    private boolean isAvailable(Player.ID id, int x, int y) {
+    boolean isAvailable(Player.ID id, int x, int y) {
         int[] diff = getDiff();
         boolean flag = false;
 
@@ -271,7 +311,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
         return flag;
     }
 
-    private boolean isAvailable(Player.ID id, int x, int y, int diff) {
+    boolean isAvailable(Player.ID id, int x, int y, int diff) {
         State myState = playerState(id);
 
         if (state.get(convert(x, y)) != State.EMPTY || !contains(convert(x, y) + diff)
@@ -291,11 +331,11 @@ public class ReversiBoard extends AbstractBoard implements Board {
         return false;
     }
 
-    private int count() {
+    int count() {
         return count(nextTurn());
     }
 
-    private int count(Player.ID id) {
+    int count(Player.ID id) {
         State myState = playerState(id);
 
         int count = 0;
@@ -310,11 +350,15 @@ public class ReversiBoard extends AbstractBoard implements Board {
         return count;
     }
 
-    private State playerState(Player.ID id) {
+    int countAll() {
+        return count(Player.ID.P1) + count(Player.ID.P2);
+    }
+
+    State playerState(Player.ID id) {
         return id == Player.ID.P1 ? State.BLACK : State.WHITE;
     }
 
-    private boolean canPut(Player.ID id) {
+    boolean canPut(Player.ID id) {
         for (int i = 1; i <= height; i++) {
             for (int j = 1; j <= width; j++) {
                 if (isAvailable(id, j, i)) {
@@ -334,7 +378,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
      *            1 <= y <= height
      * @return
      */
-    private int convert(int x, int y) {
+    int convert(int x, int y) {
         return (width + 2) * y + x + 1;
     }
 
@@ -344,7 +388,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
      * @param p
      * @return
      */
-    private boolean contains(int p) {
+    boolean contains(int p) {
         for (int i = 1; i <= height; i++) {
             for (int j = 1; j <= width; j++) {
                 if (convert(j, i) == p) {
@@ -356,7 +400,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
         return false;
     }
 
-    private int convertToX(int p) {
+    int convertToX(int p) {
         for (int i = 1; i <= height; i++) {
             for (int j = 1; j <= width; j++) {
                 if (convert(j, i) == p) {
@@ -368,7 +412,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
         throw new IllegalArgumentException();
     }
 
-    private int convertToY(int p) {
+    int convertToY(int p) {
         for (int i = 1; i <= height; i++) {
             for (int j = 1; j <= width; j++) {
                 if (convert(j, i) == p) {
@@ -380,7 +424,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
         throw new IllegalArgumentException();
     }
 
-    private int[] getDiff() {
+    int[] getDiff() {
         return new int[] { -(width + 2) - 1, -(width + 2), -(width + 2) + 1, -1, 1, (width + 2) - 1, (width + 2),
                 (width + 2) + 1 };
     }
