@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class StandardReversiScore implements Function<ReversiBoard, Integer> {
+    // 序盤〜中盤の手の評価を行う関数
+
     private static final List<Pair<List<Boolean>, Integer> > CORNERS_SCORE = Collections.unmodifiableList(Arrays.asList(
             // 角，角の隣，角の隣の隣 の順番で, 自石が置かれていれば true, o.w. false.
             // 角が取れていれば100点, 角を取れずにその隣に自石が置かれていると-50点　
@@ -17,10 +19,12 @@ public class StandardReversiScore implements Function<ReversiBoard, Integer> {
             Pair.of(Arrays.asList(false, true, false), -50)
             ));
 
-    private final int k;
+    private final int p;
+    private final int q;
 
-    public StandardReversiScore(int k) {
-        this.k = k;
+    public StandardReversiScore(int p, int q) {
+        this.p = p;
+        this.q = q;
     }
 
     @Override
@@ -75,15 +79,15 @@ public class StandardReversiScore implements Function<ReversiBoard, Integer> {
             System.err.println("WARNING: Corner score was not calculated");
             ansCornerScore = 0;
         }
-        return (selfMovableCount - enemyMovableCount) + k * ansCornerScore;
+        return p * (selfMovableCount - enemyMovableCount) + q * ansCornerScore;
     }
 
-    private Boolean[] bits(ReversiBoard reversi, Player.ID player, Pair<Integer, Integer>... positions) {
-        ReversiBoard.State playerState = reversi.playerState(player);
+    private Boolean[] bits(ReversiBoard board, Player.ID player, Pair<Integer, Integer>... positions) {
+        ReversiBoard.State playerState = board.playerState(player);
         Boolean[] bits = new Boolean[positions.length];
         for(int i = 0; i < positions.length; ++i) {
             Pair<Integer, Integer> position = positions[i];
-            ReversiBoard.State state = reversi.get(position.getKey(), position.getValue());
+            ReversiBoard.State state = board.get(position.getKey(), position.getValue());
             if(playerState.equals(state)) bits[i] = true;
             else bits[i] = false;
         }

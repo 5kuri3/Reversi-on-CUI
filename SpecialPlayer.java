@@ -1,19 +1,23 @@
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.function.Function;
 
 public class SpecialPlayer implements Player {
     private static final String TITLE = "Special AI";
-    private static final long STANDARD_TIME_LIMIT_MILLIS = 5000;
+    private static final long STANDARD_TIME_LIMIT_MILLIS = 1000;
+    private static final int STANDARD_P = 100;
+    private static final int STANDARD_Q = 3;
     private static final int STANDARD_END_GAME_COUNT = 12;
     private static final int INF = Integer.MAX_VALUE / 2;
+    private static final boolean DEBUG_MODE = false;
     private final String name;
     private final Function<ReversiBoard, Integer> score;
     private final long timeLimitMillis;
     private final int endGameCount;
 
     public static SpecialPlayer standardScore(String name) {
-        return new SpecialPlayer(name, new StandardReversiScore(3), STANDARD_TIME_LIMIT_MILLIS, STANDARD_END_GAME_COUNT);
+        return new SpecialPlayer(name, new StandardReversiScore(STANDARD_P, STANDARD_Q), STANDARD_TIME_LIMIT_MILLIS, STANDARD_END_GAME_COUNT);
     }
 
     private static class TimeLimitException extends Exception { }
@@ -27,6 +31,9 @@ public class SpecialPlayer implements Player {
 
     @Override
     public int move(Board board) {
+        if(DEBUG_MODE) {
+            System.err.println(String.format("\u001b[00;33m[DEBUG] 警告: %s: デバッグモード有効\u001b[00m", getClass().getSimpleName()));
+        }
         ReversiBoard reversiBoard;
         if(board instanceof ReversiBoard) {
             reversiBoard = (ReversiBoard)board;
@@ -62,26 +69,35 @@ public class SpecialPlayer implements Player {
     private int usualMove(ReversiBoard board) {
         Integer[] legalMoves = board.legalMoves().toArray(new Integer[0]);
         Integer[] scores = new Integer[legalMoves.length];
-        Arrays.fill(scores, -INF);
+        Arrays.fill(scores, 0);
         long timeLimitAt = System.currentTimeMillis() + timeLimitMillis;
         int depth = 0;
         try {
             for (depth = 3; ; ++depth) {
+                Integer[] tmp = new Integer[legalMoves.length];
+                Arrays.fill(tmp, 0);
                 for (int i = 0; i < legalMoves.length; ++i) {
                     int m = legalMoves[i];
                     board.put(m, true);
                     int score = abSearch(board, depth - 1, -INF, INF, timeLimitAt);
                     board.unput();
-                    scores[i] = score;
+                    tmp[i] = score;
                 }
+                scores = tmp;
             }
         }
         catch(TimeLimitException e) {
+        }
+        if(DEBUG_MODE) {
+            System.err.println("[DEBUG] Depth: " + depth);
         }
         int minScore = scores[0];
         int optMove = legalMoves[0];
         for(int i = 0; i < scores.length; ++i) {
             int score = scores[i];
+            if(DEBUG_MODE) {
+                System.err.println(String.format("[DEBUG] %s: %d", board.explain(legalMoves[i]), score));
+            }
             if(minScore > score) {
                 minScore = score;
                 optMove = legalMoves[i];
@@ -104,6 +120,9 @@ public class SpecialPlayer implements Player {
         int optMove = legalMoves[0];
         for(int i = 0; i < scores.length; ++i) {
             int score = scores[i];
+            if(DEBUG_MODE) {
+                System.err.println(String.format("[DEBUG] %s: %d", board.explain(legalMoves[i]), score));
+            }
             if(minScore > score) {
                 minScore = score;
                 optMove = legalMoves[i];
