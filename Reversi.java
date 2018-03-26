@@ -7,21 +7,23 @@ public class Reversi extends SimpleGame {
     @Override
     protected Player createPlayer(String type, String name) {
         if ("input".equals(type)) {
-            return createDefaultInput(name);
+            return new InputPlayer(name, System.in, System.out);
+        }
+        else if("general".equals(type)) {
+            return new TimeLimitedPlayer(new GeneralPlayer(name), TIME_LIMIT_MILLIS, System.out);
+        }
+        else if("special".equals(type)) {
+            return new TimeLimitedPlayer(SpecialPlayer.standardScore(name), TIME_LIMIT_MILLIS, System.out);
         }
         else {
-            return createDefaultAI(name);
+            System.err.println(String.format("警告: %s は不明なプレイヤータイプです", type));
+            return null;
         }
     }
-    
+
     @Override
-    protected Player createDefaultInput(String name) {
-        return new InputPlayer(name, System.in, System.out);
-    }
-    
-    @Override
-    protected Player createDefaultAI(String name) {
-        return new TimeLimitedPlayer(new GeneralPlayer(name), TIME_LIMIT_MILLIS, System.out);
+    protected String explainPlayerType() {
+        return "player-type:\n    input: 手入力\n    general: General AI\n    special: Special AI";
     }
     
     public Reversi(String[] args) {

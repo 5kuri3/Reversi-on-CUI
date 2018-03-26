@@ -6,35 +6,18 @@ public abstract class SimpleGame {
     private Player p1;
     private Player p2;
     
-    public SimpleGame() {
-        this.p1 = defaultFirstPlayer(true);
-        this.p2 = defaultSecondPlayer(true);
-    }
-    
     public SimpleGame(String[] args) {
         parseArgs(args);
-        if(this.p1 == null) this.p1 = defaultFirstPlayer(true);
-        if(this.p2 == null) this.p2 = defaultSecondPlayer(true);
     }
     
     protected abstract Player createPlayer(String type, String name);
     
-    protected abstract Player createDefaultInput(String name);
-    
-    protected abstract Player createDefaultAI(String name);
+    protected abstract String explainPlayerType();
     
     private void parseArgs(String[] args) {
         for (int i = 0; i < args.length; ++i) {
             String arg = args[i];
-            if("first".equals(arg)) {
-                this.p1 = defaultFirstPlayer(true);
-                this.p2 = defaultSecondPlayer(true);
-            }
-            else if("second".equals(arg)) {
-                this.p1 = defaultFirstPlayer(false);
-                this.p2 = defaultSecondPlayer(false);
-            }
-            else if("--p1".equals(arg)) {
+            if("--p1".equals(arg)) {
                 ++i;
                 if(i < args.length) {
                     this.p1 = createPlayer(args[i], NAME_P1);
@@ -58,20 +41,18 @@ public abstract class SimpleGame {
         }
     }
     
-    private Player defaultFirstPlayer(boolean inputFirst) {
-        if(inputFirst) return createDefaultInput(NAME_P1);
-        else return createDefaultAI(NAME_P1);
-    }
-    
-    private Player defaultSecondPlayer(boolean inputFirst) {
-        if(inputFirst) return createDefaultAI(NAME_P2);
-        else return createDefaultInput(NAME_P2);
-    }
-    
     // Boardと2つのプレイヤーを使う，ゲームのメインプログラム
     public void play(Board board) {
-        assert p1 != null;
-        assert p2 != null;
+        if(p1 == null || p2 == null) {
+            if(p1 == null) {
+                System.err.println("エラー: --p1 <player-type> オプションでプレイヤータイプを設定する必要があります");
+            }
+            if(p2 == null) {
+                System.err.println("エラー: --p2 <player-type> オプションでプレイヤータイプを設定する必要があります");
+            }
+            System.err.println(explainPlayerType());
+            System.exit(-2);
+        }
         System.out.println();
         System.out.println(String.format("%s 先攻: %s (%s)", board.drawPiece(Player.ID.P1).toString(), p1.getName(), p1.getTitle()));
         System.out.println(String.format("%s 後攻: %s (%s)", board.drawPiece(Player.ID.P2).toString(), p2.getName(), p2.getTitle()));
@@ -116,7 +97,8 @@ public abstract class SimpleGame {
         System.out.println("ゲーム終了");
         Player.ID winner = board.winner();
         if (winner != Player.ID.NONE) {
-            System.out.println((winner == Player.ID.P1 ? p1 : p2).getName() + "の勝ち．");
+            Player winPlayer = (winner == Player.ID.P1 ? p1 : p2);
+            System.out.println(winPlayer.getName() + " (" + winPlayer.getTitle() + ") の勝ちです．");
         } else {
             System.out.println("引き分け");
         }
