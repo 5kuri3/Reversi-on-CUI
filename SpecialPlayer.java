@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 public class SpecialPlayer implements Player {
     private static final String TITLE = "Special AI";
-    private static final long STANDARD_TIME_LIMIT_MILLIS = 5000;
+    private static final long STANDARD_TIME_LIMIT_MILLIS = 30000;
     private static final int STANDARD_P = 100;
     private static final int STANDARD_Q = 3;
     private static final int STANDARD_END_GAME_COUNT = 12;
