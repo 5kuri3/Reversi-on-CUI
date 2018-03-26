@@ -1,32 +1,38 @@
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 import java.util.function.Function;
 
 public class SpecialPlayer implements Player {
-    private static final String TITLE = "Special AI";
-    private static final long STANDARD_TIME_LIMIT_MILLIS = 30300;
-    private static final int STANDARD_P = 100;
-    private static final int STANDARD_Q = 3;
-    private static final int STANDARD_END_GAME_COUNT = 12;
+    public static final String TITLE = "Special AI";
+    public static final int STANDARD_K1 = 100;
+    public static final int STANDARD_K2 = 3;
+    public static final int STANDARD_END_GAME_COUNT = 12;
+    public static final long STANDARD_TIME_LIMIT_MILLIS = 10000;
     private static final int INF = Integer.MAX_VALUE / 2;
     private static final boolean DEBUG_MODE = false;
     private final String name;
+    private final String title;
     private final Function<ReversiBoard, Integer> score;
-    private final long timeLimitMillis;
     private final int endGameCount;
+    private final long timeLimitMillis;
 
     public static SpecialPlayer standardScore(String name) {
-        return new SpecialPlayer(name, new StandardReversiScore(STANDARD_P, STANDARD_Q), STANDARD_TIME_LIMIT_MILLIS, STANDARD_END_GAME_COUNT);
+        return new SpecialPlayer(name, TITLE, new StandardReversiScore(STANDARD_K1, STANDARD_K2), STANDARD_END_GAME_COUNT, STANDARD_TIME_LIMIT_MILLIS);
+    }
+
+    public static SpecialPlayer standardScore(String name, int k1, int k2, int endGameCount, long timeLimitMillis) {
+        String title = String.format("%s {K1=%d K2=%d EG=%d TL=%d}", TITLE, k1, k2, endGameCount, timeLimitMillis);
+        return new SpecialPlayer(name, title, new StandardReversiScore(k1, k2), endGameCount, timeLimitMillis);
     }
 
     private static class TimeLimitException extends Exception { }
 
-    public SpecialPlayer(String name, Function<ReversiBoard, Integer> score, long timeLimitMillis, int endGameCount) {
+    public SpecialPlayer(String name, String title, Function<ReversiBoard, Integer> score, int endGameCount, long timeLimitMillis) {
         this.name = name;
+        this.title = title;
         this.score = score;
-        this.timeLimitMillis = timeLimitMillis;
         this.endGameCount = endGameCount;
+        this.timeLimitMillis = timeLimitMillis;
     }
 
     @Override
@@ -57,7 +63,7 @@ public class SpecialPlayer implements Player {
 
     @Override
     public String getTitle() {
-        return TITLE;
+        return title;
     }
 
     private boolean isEndGame(ReversiBoard board) {
