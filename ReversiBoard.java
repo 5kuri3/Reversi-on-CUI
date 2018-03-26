@@ -249,7 +249,7 @@ public class ReversiBoard extends AbstractBoard implements Board {
             // System.out.println(nextTurn());
             // if (nextTurn() == Player.ID.P1){
             String key = moveToKey(m);
-            out.println(String.format("%s : %s [%d] を選択", key, explain(m), m));
+            out.println(String.format("%sに置く -> %sを入力", explain(m), key));
             // }
         }
     }
