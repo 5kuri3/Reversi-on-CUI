@@ -19,12 +19,12 @@ public class StandardReversiScore implements Function<ReversiBoard, Integer> {
             Pair.of(Arrays.asList(false, true, false), -50)
             ));
 
-    private final int p;
-    private final int q;
+    private final int k1;
+    private final int k2;
 
-    public StandardReversiScore(int p, int q) {
-        this.p = p;
-        this.q = q;
+    public StandardReversiScore(int k1, int k2) {
+        this.k1 = k1;
+        this.k2 = k2;
     }
 
     @Override
@@ -79,7 +79,7 @@ public class StandardReversiScore implements Function<ReversiBoard, Integer> {
             System.err.println("WARNING: Corner score was not calculated");
             ansCornerScore = 0;
         }
-        return p * (selfMovableCount - enemyMovableCount) + q * ansCornerScore;
+        return k1 * (selfMovableCount - enemyMovableCount) + k2 * ansCornerScore;
     }
 
     private Boolean[] bits(ReversiBoard board, Player.ID player, Pair<Integer, Integer>... positions) {

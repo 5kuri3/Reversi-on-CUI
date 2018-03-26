@@ -1,3 +1,7 @@
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class SimpleGame {
     public static final String NAME_P1 = "プレイヤー１";
@@ -13,6 +17,10 @@ public abstract class SimpleGame {
     protected abstract Player createPlayer(String type, String name);
     
     protected abstract String explainPlayerType();
+
+    protected Collection<String> effectiveCommandArguments() {
+        return null;
+    }
     
     private void parseArgs(String[] args) {
         for (int i = 0; i < args.length; ++i) {
@@ -36,7 +44,10 @@ public abstract class SimpleGame {
                 } 
             }
             else {
-                System.err.println(String.format("認識されないオプション '%s' は無視されます", arg));
+                Collection<String> cmdArgs = effectiveCommandArguments();
+                if(cmdArgs == null || !cmdArgs.contains(arg)) {
+                    System.err.println(String.format("認識されないオプション '%s' は無視されます", arg));
+                }
             }
         }
     }

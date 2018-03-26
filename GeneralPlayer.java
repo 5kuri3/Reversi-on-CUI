@@ -22,7 +22,7 @@ public class GeneralPlayer implements Player {
         long[] win = new long[n];
         long[] lost = new long[n];
         long start = System.nanoTime();
-        while (System.nanoTime() - start < 5000000000L) {
+        while (System.nanoTime() - start < 10000000000L) {
         //while (System.nanoTime() - start < 35000000000L) { // 35秒間シミュレーションを繰り返す
             int i = 0;
             for (int m : moves) { // すべての可能な手について1回ずつシミュレーションする
