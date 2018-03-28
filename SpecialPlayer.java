@@ -4,10 +4,10 @@ import java.util.function.Function;
 
 public class SpecialPlayer implements Player {
     public static final String TITLE = "Special AI";
-    public static final int STANDARD_K1 = 75;
-    public static final int STANDARD_K2 = 10;
-    public static final int STANDARD_END_GAME_COUNT = 14;
-    public static final long STANDARD_TIME_LIMIT_MILLIS = 40000;
+    public static final int STANDARD_K1 = 100;
+    public static final int STANDARD_K2 = 3;
+    public static final int STANDARD_END_GAME_COUNT = 13;
+    public static final long STANDARD_TIME_LIMIT_MILLIS = 30000;
     private static final int INF = Integer.MAX_VALUE / 2;
     private static final boolean DEBUG_MODE = false;
     private final String name;
